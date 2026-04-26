@@ -14,9 +14,9 @@ Recruiters spend hours sifting through profiles and chasing candidate interest. 
 
 ## 🚀 Live Demo
 
-- **Deployed URL:** `https://your-render-url.onrender.com`
+- **Deployed URL:** `https://talentscout-ai-1.onrender.com`
 - **Demo Video:** `https://your-loom-link`
-- **GitHub:** `https://github.com/your-username/talent-scout`
+- **GitHub:** `https://github.com/Ziyaur-Rahaman/TalentScout-AI.git`
 
 ---
 
