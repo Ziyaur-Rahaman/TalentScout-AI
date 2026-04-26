@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TalentScout AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); }
+    .card-glow { box-shadow: 0 0 30px rgba(99, 102, 241, 0.15); }
+    .btn-glow { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    .float { animation: float 3s ease-in-out infinite; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeInUp 0.6s ease forwards; }
+    .hero-text { background: linear-gradient(135deg, #818cf8, #c084fc, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- NAV -->
+  <nav class="flex justify-between items-center px-8 py-5 border-b border-white/10">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">T</div>
+      <span class="text-xl font-bold text-white">TalentScout <span class="text-indigo-400">AI</span></span>
+    </div>
+    <div class="flex gap-3">
+      <a href="/login.html" class="px-4 py-2 text-sm text-white/70 hover:text-white transition">Login</a>
+      <a href="/register.html" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 rounded-lg transition btn-glow">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="text-center px-6 pt-24 pb-16 fade-in">
+    <div class="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full px-4 py-2 text-sm text-indigo-300 mb-8">
+      <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+      AI-Powered Recruitment — Fully Autonomous
+    </div>
+    <h1 class="text-6xl font-extrabold leading-tight mb-6">
+      Hire Smarter with<br/>
+      <span class="hero-text">Autonomous AI Agents</span>
+    </h1>
+    <p class="text-lg text-white/60 max-w-2xl mx-auto mb-10">
+      Post a job. Our AI agent finds candidates, chats with them autonomously,
+      scores their interest, and delivers a ranked shortlist — zero recruiter effort.
+    </p>
+    <div class="flex gap-4 justify-center">
+      <a href="/register.html?role=recruiter"
+         class="px-8 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold text-white transition btn-glow">
+        I'm a Recruiter →
+      </a>
+      <a href="/register.html?role=candidate"
+         class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl font-semibold text-white transition">
+        I'm a Candidate →
+      </a>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="px-8 py-16 max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-4">How It Works</h2>
+    <p class="text-white/50 text-center mb-12">Four steps. Zero manual effort.</p>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <!-- Step 1 -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-glow text-center">
+        <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">📋</div>
+        <div class="text-indigo-400 text-xs font-semibold mb-2">STEP 01</div>
+        <h3 class="font-semibold mb-2">Post a Job</h3>
+        <p class="text-white/50 text-sm">Paste or upload your job description. PDF, DOCX, or plain text.</p>
+      </div>
+      <!-- Step 2 -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-glow text-center">
+        <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">🔍</div>
+        <div class="text-purple-400 text-xs font-semibold mb-2">STEP 02</div>
+        <h3 class="font-semibold mb-2">AI Finds Matches</h3>
+        <p class="text-white/50 text-sm">Agent scans all candidates and scores each one on skill fit.</p>
+      </div>
+      <!-- Step 3 -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-glow text-center">
+        <div class="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">💬</div>
+        <div class="text-pink-400 text-xs font-semibold mb-2">STEP 03</div>
+        <h3 class="font-semibold mb-2">AI Chats with Candidates</h3>
+        <p class="text-white/50 text-sm">Autonomous conversations assess availability, salary, and interest.</p>
+      </div>
+      <!-- Step 4 -->
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-6 card-glow text-center">
+        <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-2xl mx-auto mb-4">🏆</div>
+        <div class="text-green-400 text-xs font-semibold mb-2">STEP 04</div>
+        <h3 class="font-semibold mb-2">Get Ranked Shortlist</h3>
+        <p class="text-white/50 text-sm">Recruiter sees final ranked list with scores and explanations.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="px-8 py-12 max-w-4xl mx-auto">
+    <div class="grid grid-cols-3 gap-6 text-center">
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-8">
+        <div class="text-4xl font-extrabold text-indigo-400 mb-2">100%</div>
+        <div class="text-white/60 text-sm">Autonomous Process</div>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-8">
+        <div class="text-4xl font-extrabold text-purple-400 mb-2">2x</div>
+        <div class="text-white/60 text-sm">Scoring Dimensions</div>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-2xl p-8">
+        <div class="text-4xl font-extrabold text-pink-400 mb-2">0</div>
+        <div class="text-white/60 text-sm">Manual Effort Needed</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="text-center px-6 py-16">
+    <div class="bg-indigo-600/20 border border-indigo-500/30 rounded-3xl p-12 max-w-2xl mx-auto card-glow">
+      <h2 class="text-3xl font-bold mb-4">Ready to Transform Hiring?</h2>
+      <p class="text-white/60 mb-8">Join as a recruiter or candidate and experience AI-powered recruitment.</p>
+      <div class="flex gap-4 justify-center">
+        <a href="/register.html?role=recruiter"
+           class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition btn-glow">
+          Start as Recruiter
+        </a>
+        <a href="/register.html?role=candidate"
+           class="px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl font-semibold transition">
+          Join as Candidate
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="text-center py-8 border-t border-white/10 text-white/30 text-sm">
+    TalentScout AI — Built for Catalyst Hackathon by Deccan AI
+  </footer>
+
+</body>
+</html>

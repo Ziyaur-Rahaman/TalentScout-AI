@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — TalentScout AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white flex items-center justify-center px-4 py-12">
+
+  <div class="w-full max-w-lg">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-2">
+        <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-sm">T</div>
+        <span class="text-xl font-bold">TalentScout <span class="text-indigo-400">AI</span></span>
+      </a>
+      <h2 class="text-2xl font-bold mt-6 mb-1">Create your account</h2>
+      <p class="text-white/50 text-sm">Join the AI-powered recruitment platform</p>
+    </div>
+
+    <!-- Role Toggle -->
+    <div class="flex bg-white/5 rounded-xl p-1 mb-6 border border-white/10">
+      <button onclick="setRole('recruiter')" id="btn-recruiter"
+        class="flex-1 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white">
+        Recruiter
+      </button>
+      <button onclick="setRole('candidate')" id="btn-candidate"
+        class="flex-1 py-2 rounded-lg text-sm font-medium transition text-white/50">
+        Candidate
+      </button>
+    </div>
+
+    <!-- RECRUITER FORM -->
+    <div id="recruiter-form" class="bg-white/5 border border-white/10 rounded-2xl p-8 space-y-4">
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Full Name</label>
+        <input id="r-name" type="text" placeholder="John Smith"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Company Name</label>
+        <input id="r-company" type="text" placeholder="TechCorp"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Email</label>
+        <input id="r-email" type="email" placeholder="you@company.com"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Password</label>
+        <input id="r-password" type="password" placeholder="••••••••"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div id="r-error" class="text-red-400 text-sm hidden"></div>
+      <button onclick="registerRecruiter()"
+        class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition">
+        Create Recruiter Account →
+      </button>
+    </div>
+
+    <!-- CANDIDATE FORM -->
+    <div id="candidate-form" class="bg-white/5 border border-white/10 rounded-2xl p-8 space-y-4 hidden">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Full Name</label>
+          <input id="c-name" type="text" placeholder="Your name"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Phone</label>
+          <input id="c-phone" type="text" placeholder="9876543210"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Email</label>
+        <input id="c-email" type="email" placeholder="you@example.com"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Password</label>
+        <input id="c-password" type="password" placeholder="••••••••"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Location</label>
+          <input id="c-location" type="text" placeholder="Hyderabad, AP"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Current Role</label>
+          <input id="c-role" type="text" placeholder="Fresher / Developer"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Experience (years)</label>
+          <input id="c-exp" type="number" placeholder="1"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Expected Salary (LPA)</label>
+          <input id="c-salary" type="number" placeholder="8"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Skills (comma separated)</label>
+        <input id="c-skills" type="text" placeholder="Python, FastAPI, LangGraph"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Short Bio</label>
+        <textarea id="c-bio" placeholder="Tell us about yourself..."
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition resize-none" rows="2"></textarea>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Notice Period</label>
+          <select id="c-notice"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition">
+            <option value="immediate" class="bg-gray-900">Immediate</option>
+            <option value="30_days" class="bg-gray-900">30 Days</option>
+            <option value="60_days" class="bg-gray-900">60 Days</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Job Preference</label>
+          <select id="c-jobpref"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition">
+            <option value="remote" class="bg-gray-900">Remote</option>
+            <option value="onsite" class="bg-gray-900">Onsite</option>
+            <option value="hybrid" class="bg-gray-900">Hybrid</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Status</label>
+          <select id="c-status"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition">
+            <option value="actively_looking" class="bg-gray-900">Actively Looking</option>
+            <option value="open_to_offers" class="bg-gray-900">Open to Offers</option>
+            <option value="not_looking" class="bg-gray-900">Not Looking</option>
+          </select>
+        </div>
+      </div>
+      <div id="c-error" class="text-red-400 text-sm hidden"></div>
+      <button onclick="registerCandidate()"
+        class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition">
+        Create Candidate Account →
+      </button>
+    </div>
+
+    <p class="text-center text-white/40 text-sm mt-6">
+      Already have an account?
+      <a href="/login.html" class="text-indigo-400 hover:text-indigo-300">Login here</a>
+    </p>
+  </div>
+
+  <script>
+    let currentRole = 'recruiter'
+
+    // Check URL param
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('role') === 'candidate') setRole('candidate')
+
+    function setRole(role) {
+      currentRole = role
+      document.getElementById('btn-recruiter').className =
+        `flex-1 py-2 rounded-lg text-sm font-medium transition ${role === 'recruiter' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+      document.getElementById('btn-candidate').className =
+        `flex-1 py-2 rounded-lg text-sm font-medium transition ${role === 'candidate' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+      document.getElementById('recruiter-form').classList.toggle('hidden', role !== 'recruiter')
+      document.getElementById('candidate-form').classList.toggle('hidden', role !== 'candidate')
+    }
+
+    async function registerRecruiter() {
+      const errorEl = document.getElementById('r-error')
+      const body = {
+        name: document.getElementById('r-name').value,
+        company: document.getElementById('r-company').value,
+        email: document.getElementById('r-email').value,
+        password: document.getElementById('r-password').value
+      }
+      try {
+        const res = await fetch('/api/auth/recruiter/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          errorEl.textContent = data.detail || 'Registration failed'
+          errorEl.classList.remove('hidden')
+          return
+        }
+        localStorage.setItem('token', data.access_token)
+        localStorage.setItem('role', data.role)
+        localStorage.setItem('user_id', data.user_id)
+        localStorage.setItem('name', data.name)
+        window.location.href = '/recruiter.html'
+      } catch {
+        errorEl.textContent = 'Something went wrong'
+        errorEl.classList.remove('hidden')
+      }
+    }
+
+    async function registerCandidate() {
+      const errorEl = document.getElementById('c-error')
+      const skillsRaw = document.getElementById('c-skills').value
+      const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean)
+      const body = {
+        name: document.getElementById('c-name').value,
+        email: document.getElementById('c-email').value,
+        password: document.getElementById('c-password').value,
+        phone: document.getElementById('c-phone').value,
+        location: document.getElementById('c-location').value,
+        experience_years: parseFloat(document.getElementById('c-exp').value) || 0,
+        current_role: document.getElementById('c-role').value,
+        expected_salary: parseFloat(document.getElementById('c-salary').value) || 0,
+        notice_period: document.getElementById('c-notice').value,
+        job_preference: document.getElementById('c-jobpref').value,
+        skills: skills,
+        bio: document.getElementById('c-bio').value,
+        status: document.getElementById('c-status').value
+      }
+      try {
+        const res = await fetch('/api/auth/candidate/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          errorEl.textContent = data.detail || 'Registration failed'
+          errorEl.classList.remove('hidden')
+          return
+        }
+        localStorage.setItem('token', data.access_token)
+        localStorage.setItem('role', data.role)
+        localStorage.setItem('user_id', data.user_id)
+        localStorage.setItem('name', data.name)
+        window.location.href = '/candidate.html'
+      } catch {
+        errorEl.textContent = 'Something went wrong'
+        errorEl.classList.remove('hidden')
+      }
+    }
+  </script>
+</body>
+</html>

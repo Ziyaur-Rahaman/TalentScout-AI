@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — TalentScout AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white flex items-center justify-center px-4">
+
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-flex items-center gap-2">
+        <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-sm">T</div>
+        <span class="text-xl font-bold">TalentScout <span class="text-indigo-400">AI</span></span>
+      </a>
+      <h2 class="text-2xl font-bold mt-6 mb-1">Welcome back</h2>
+      <p class="text-white/50 text-sm">Login to your account</p>
+    </div>
+
+    <!-- Role Toggle -->
+    <div class="flex bg-white/5 rounded-xl p-1 mb-6 border border-white/10">
+      <button onclick="setRole('recruiter')" id="btn-recruiter"
+        class="flex-1 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white">
+        Recruiter
+      </button>
+      <button onclick="setRole('candidate')" id="btn-candidate"
+        class="flex-1 py-2 rounded-lg text-sm font-medium transition text-white/50">
+        Candidate
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white/5 border border-white/10 rounded-2xl p-8">
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Email</label>
+          <input id="email" type="email" placeholder="you@example.com"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+        <div>
+          <label class="text-sm text-white/60 mb-1 block">Password</label>
+          <input id="password" type="password" placeholder="••••••••"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 transition"/>
+        </div>
+        <div id="error-msg" class="text-red-400 text-sm hidden"></div>
+        <button onclick="login()"
+          class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-semibold transition mt-2">
+          Login →
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-white/40 text-sm mt-6">
+      Don't have an account?
+      <a href="/register.html" class="text-indigo-400 hover:text-indigo-300">Register here</a>
+    </p>
+  </div>
+
+  <script>
+    let currentRole = 'recruiter'
+
+    function setRole(role) {
+      currentRole = role
+      document.getElementById('btn-recruiter').className =
+        `flex-1 py-2 rounded-lg text-sm font-medium transition ${role === 'recruiter' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+      document.getElementById('btn-candidate').className =
+        `flex-1 py-2 rounded-lg text-sm font-medium transition ${role === 'candidate' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value
+      const password = document.getElementById('password').value
+      const errorMsg = document.getElementById('error-msg')
+
+      if (!email || !password) {
+        errorMsg.textContent = 'Please fill all fields'
+        errorMsg.classList.remove('hidden')
+        return
+      }
+
+      try {
+        const res = await fetch(`/api/auth/${currentRole}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        })
+        const data = await res.json()
+
+        if (!res.ok) {
+          errorMsg.textContent = data.detail || 'Login failed'
+          errorMsg.classList.remove('hidden')
+          return
+        }
+
+        // Save token
+        localStorage.setItem('token', data.access_token)
+        localStorage.setItem('role', data.role)
+        localStorage.setItem('user_id', data.user_id)
+        localStorage.setItem('name', data.name)
+
+        // Redirect based on role
+        if (data.role === 'recruiter') {
+          window.location.href = '/recruiter.html'
+        } else {
+          window.location.href = '/candidate.html'
+        }
+
+      } catch (err) {
+        errorMsg.textContent = 'Something went wrong'
+        errorMsg.classList.remove('hidden')
+      }
+    }
+  </script>
+</body>
+</html>

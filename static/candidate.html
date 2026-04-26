@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Candidate Dashboard — TalentScout AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); }
+    .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- NAV -->
+  <nav class="flex justify-between items-center px-8 py-4 border-b border-white/10">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-sm">T</div>
+      <span class="text-xl font-bold">TalentScout <span class="text-indigo-400">AI</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-white/60 text-sm">👋 <span id="candidate-name"></span></span>
+      <button onclick="logout()" class="text-sm text-white/40 hover:text-white transition">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- STATS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-indigo-400" id="total-matches">-</div>
+        <div class="text-white/50 text-sm mt-1">Total Matches</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-yellow-400" id="pending-chats">-</div>
+        <div class="text-white/50 text-sm mt-1">Pending Chats</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-green-400" id="completed-chats">-</div>
+        <div class="text-white/50 text-sm mt-1">Completed</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-purple-400" id="shortlisted">-</div>
+        <div class="text-white/50 text-sm mt-1">Shortlisted</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- PROFILE CARD -->
+      <div class="lg:col-span-1">
+        <div class="card p-6">
+          <h2 class="text-lg font-bold mb-4">👤 Your Profile</h2>
+          <div id="profile-content" class="space-y-3 text-sm">
+            <div class="text-white/40">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPPORTUNITIES -->
+      <div class="lg:col-span-2">
+        <h2 class="text-lg font-bold mb-4">🎯 Job Opportunities</h2>
+        <div id="opportunities-list" class="space-y-4">
+          <div class="text-white/40 text-center py-8">Loading opportunities...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token')
+    const name = localStorage.getItem('name')
+    if (!token) window.location.href = '/login.html'
+    document.getElementById('candidate-name').textContent = name
+
+    const statusConfig = {
+      under_review: { label: '⏳ Under Review', color: 'bg-yellow-500/20 text-yellow-400' },
+      shortlisted: { label: '✅ Shortlisted!', color: 'bg-green-500/20 text-green-400' },
+      not_selected: { label: '❌ Not Selected', color: 'bg-red-500/20 text-red-400' }
+    }
+
+    const chatConfig = {
+      pending: { label: '💬 Start Chat', color: 'bg-indigo-600 hover:bg-indigo-500 text-white' },
+      in_progress: { label: '▶ Continue Chat', color: 'bg-yellow-600 hover:bg-yellow-500 text-white' },
+      completed: { label: '✅ Chat Done', color: 'bg-green-600/50 text-green-300 cursor-not-allowed' }
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch('/api/candidate/dashboard', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const data = await res.json()
+
+        // Stats
+        document.getElementById('total-matches').textContent = data.total_matches
+        document.getElementById('pending-chats').textContent = data.pending_chats
+        document.getElementById('completed-chats').textContent = data.completed_chats
+        document.getElementById('shortlisted').textContent = data.shortlisted
+
+        // Profile
+        const c = data.candidate
+        const statusColors = {
+          actively_looking: 'text-green-400',
+          open_to_offers: 'text-yellow-400',
+          not_looking: 'text-gray-400'
+        }
+        document.getElementById('profile-content').innerHTML = `
+          <div class="flex justify-between">
+            <span class="text-white/50">Status</span>
+            <span class="${statusColors[c.status] || 'text-white'} font-medium capitalize">
+              ${c.status?.replace(/_/g, ' ')}
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-white/50">Location</span>
+            <span>${c.location}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-white/50">Experience</span>
+            <span>${c.experience_years} years</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-white/50">Expected</span>
+            <span>${c.expected_salary} LPA</span>
+          </div>
+          <div class="mt-3">
+            <div class="text-white/50 mb-2">Skills</div>
+            <div class="flex flex-wrap gap-1">
+              ${(c.skills || []).map(s =>
+                `<span class="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-full">${s}</span>`
+              ).join('')}
+            </div>
+          </div>
+        `
+
+        // Opportunities
+        const container = document.getElementById('opportunities-list')
+        if (!data.opportunities.length) {
+          container.innerHTML = `
+            <div class="card p-8 text-center">
+              <div class="text-4xl mb-3">🎯</div>
+              <div class="text-white/60">No matches yet. Keep your profile updated!</div>
+            </div>`
+          return
+        }
+
+        container.innerHTML = data.opportunities.map(opp => {
+          const appStatus = statusConfig[opp.application_status] ||
+            { label: opp.application_status, color: 'bg-gray-500/20 text-gray-400' }
+          const chatBtn = chatConfig[opp.chat_status] ||
+            chatConfig.pending
+
+          return `
+            <div class="card p-5">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h3 class="font-semibold text-lg">${opp.job_title}</h3>
+                  <div class="text-white/50 text-sm mt-1">
+                    📍 ${opp.location || 'Location TBD'} •
+                    💰 ${opp.salary_range}
+                  </div>
+                </div>
+                <span class="text-xs px-3 py-1 rounded-full font-medium ${appStatus.color}">
+                  ${appStatus.label}
+                </span>
+              </div>
+
+              <!-- Scores -->
+              <div class="grid grid-cols-3 gap-3 mb-3">
+                <div class="bg-white/5 rounded-xl p-3 text-center">
+                  <div class="text-lg font-bold text-indigo-400">${opp.match_score || '-'}</div>
+                  <div class="text-xs text-white/40">Match</div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-3 text-center">
+                  <div class="text-lg font-bold text-purple-400">${opp.interest_score || '-'}</div>
+                  <div class="text-xs text-white/40">Interest</div>
+                </div>
+                <div class="bg-white/5 rounded-xl p-3 text-center">
+                  <div class="text-lg font-bold text-green-400">${opp.final_score || '-'}</div>
+                  <div class="text-xs text-white/40">Final</div>
+                </div>
+              </div>
+
+              <!-- Matched Skills -->
+              ${opp.matched_skills?.length ? `
+                <div class="mb-3">
+                  <span class="text-xs text-white/40">Matched Skills: </span>
+                  ${opp.matched_skills.map(s =>
+                    `<span class="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full mr-1">${s}</span>`
+                  ).join('')}
+                </div>` : ''}
+
+              <!-- Why matched -->
+              <div class="text-xs text-white/40 mb-4">${opp.explanation || ''}</div>
+
+              <!-- Chat Button -->
+              ${opp.conversation_id ? `
+                <button
+                  onclick="${opp.chat_status !== 'completed' ? `openChat('${opp.conversation_id}')` : ''}"
+                  class="w-full py-2.5 rounded-xl font-semibold text-sm transition ${chatBtn.color}">
+                  ${chatBtn.label}
+                </button>` : ''}
+            </div>
+          `
+        }).join('')
+
+      } catch(e) {
+        console.error(e)
+      }
+    }
+
+    function openChat(conversationId) {
+      window.location.href = `/chat.html?id=${conversationId}`
+    }
+
+    function logout() {
+      localStorage.clear()
+      window.location.href = '/'
+    }
+
+    loadDashboard()
+    setInterval(loadDashboard, 30000)
+  </script>
+</body>
+</html>

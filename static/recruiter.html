@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recruiter Dashboard — TalentScout AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%); }
+    .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; }
+    .btn-primary { background: #4f46e5; color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover { background: #4338ca; }
+    .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- NAV -->
+  <nav class="flex justify-between items-center px-8 py-4 border-b border-white/10">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-sm">T</div>
+      <span class="text-xl font-bold">TalentScout <span class="text-indigo-400">AI</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-white/60 text-sm">👋 <span id="recruiter-name"></span></span>
+      <button onclick="logout()" class="text-sm text-white/40 hover:text-white transition">Logout</button>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- ANALYTICS CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-indigo-400" id="total-candidates">-</div>
+        <div class="text-white/50 text-sm mt-1">Total Candidates</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-green-400" id="actively-looking">-</div>
+        <div class="text-white/50 text-sm mt-1">Actively Looking</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-purple-400" id="total-jobs">-</div>
+        <div class="text-white/50 text-sm mt-1">Jobs Posted</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="text-3xl font-bold text-pink-400" id="total-chats">-</div>
+        <div class="text-white/50 text-sm mt-1">Chats Completed</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- POST JOB -->
+      <div class="lg:col-span-1">
+        <div class="card p-6">
+          <h2 class="text-lg font-bold mb-4">📋 Post New Job</h2>
+
+          <!-- Tab Toggle -->
+          <div class="flex bg-white/5 rounded-xl p-1 mb-4 border border-white/10">
+            <button onclick="setInputMode('text')" id="tab-text"
+              class="flex-1 py-2 rounded-lg text-xs font-medium transition bg-indigo-600 text-white">
+              Paste Text
+            </button>
+            <button onclick="setInputMode('file')" id="tab-file"
+              class="flex-1 py-2 rounded-lg text-xs font-medium transition text-white/50">
+              Upload File
+            </button>
+          </div>
+
+          <!-- Text Input -->
+          <div id="text-input">
+            <input id="job-title" type="text" placeholder="Job Title (e.g. Backend Engineer)"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 mb-3 text-sm"/>
+            <textarea id="job-description" rows="8" placeholder="Paste full job description here..."
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 text-sm resize-none"></textarea>
+          </div>
+
+          <!-- File Input -->
+          <div id="file-input" class="hidden">
+            <input id="file-title" type="text" placeholder="Job Title"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-indigo-500 mb-3 text-sm"/>
+            <div class="border-2 border-dashed border-white/20 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-500 transition"
+              onclick="document.getElementById('jd-file').click()">
+              <div class="text-3xl mb-2">📎</div>
+              <div class="text-white/60 text-sm" id="file-label">Click to upload PDF or DOCX</div>
+              <input type="file" id="jd-file" accept=".pdf,.docx" class="hidden" onchange="updateFileLabel()"/>
+            </div>
+          </div>
+
+          <div id="post-error" class="text-red-400 text-sm mt-2 hidden"></div>
+          <div id="post-loading" class="text-indigo-400 text-sm mt-2 hidden">
+            ⏳ Parsing JD and matching candidates... This may take 30-60 seconds.
+          </div>
+
+          <button onclick="postJob()" class="btn-primary w-full mt-4">
+            🚀 Find Candidates Automatically
+          </button>
+        </div>
+      </div>
+
+      <!-- JOBS LIST -->
+      <div class="lg:col-span-2">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold">📁 Active Jobs</h2>
+          <button onclick="loadJobs()" class="text-sm text-indigo-400 hover:text-indigo-300">↻ Refresh</button>
+        </div>
+        <div id="jobs-list" class="space-y-4">
+          <div class="text-white/40 text-center py-8">Loading jobs...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOB DETAIL MODAL -->
+    <div id="job-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold" id="modal-title">Job Details</h2>
+            <button onclick="closeModal()" class="text-white/40 hover:text-white text-2xl">×</button>
+          </div>
+          <div id="modal-content"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token')
+    const name = localStorage.getItem('name')
+
+    if (!token) window.location.href = '/login.html'
+    document.getElementById('recruiter-name').textContent = name
+
+    let inputMode = 'text'
+
+    function setInputMode(mode) {
+      inputMode = mode
+      document.getElementById('tab-text').className =
+        `flex-1 py-2 rounded-lg text-xs font-medium transition ${mode === 'text' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+      document.getElementById('tab-file').className =
+        `flex-1 py-2 rounded-lg text-xs font-medium transition ${mode === 'file' ? 'bg-indigo-600 text-white' : 'text-white/50'}`
+      document.getElementById('text-input').classList.toggle('hidden', mode !== 'text')
+      document.getElementById('file-input').classList.toggle('hidden', mode !== 'file')
+    }
+
+    function updateFileLabel() {
+      const file = document.getElementById('jd-file').files[0]
+      if (file) document.getElementById('file-label').textContent = file.name
+    }
+
+    async function loadAnalytics() {
+      try {
+        const res = await fetch('/api/recruiter/analytics', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const data = await res.json()
+        document.getElementById('total-candidates').textContent = data.total_candidates
+        document.getElementById('actively-looking').textContent = data.actively_looking
+        document.getElementById('total-jobs').textContent = data.total_jobs
+        document.getElementById('total-chats').textContent = data.total_chats_completed
+      } catch(e) { console.error(e) }
+    }
+
+    async function loadJobs() {
+      try {
+        const res = await fetch('/api/recruiter/jobs', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const jobs = await res.json()
+        const container = document.getElementById('jobs-list')
+
+        if (!jobs.length) {
+          container.innerHTML = '<div class="text-white/40 text-center py-8">No jobs posted yet. Post your first job!</div>'
+          return
+        }
+
+        container.innerHTML = jobs.map(job => `
+          <div class="card p-5 hover:border-indigo-500/50 transition cursor-pointer" onclick="viewJob('${job._id}')">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h3 class="font-semibold">${job.title}</h3>
+                <div class="text-white/50 text-sm mt-1">
+                  ${job.parsed_data?.location || 'Location TBD'} •
+                  ${job.parsed_data?.salary_min || 0}-${job.parsed_data?.salary_max || 0} LPA
+                </div>
+              </div>
+              <span class="status-badge ${job.report_generated ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                ${job.report_generated ? '✅ Report Ready' : `⏳ ${job.hours_left}hr left`}
+              </span>
+            </div>
+            <div class="flex gap-4 text-sm mb-3">
+              <span class="text-white/60">Matched: <span class="text-white font-medium">${job.matched_count}</span></span>
+              <span class="text-white/60">Chatted: <span class="text-green-400 font-medium">${job.chatted_count}</span></span>
+              <span class="text-white/60">Pending: <span class="text-yellow-400 font-medium">${job.not_responded_count}</span></span>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button onclick="event.stopPropagation(); viewJob('${job._id}')"
+                class="text-xs px-3 py-1.5 bg-indigo-500/20 text-indigo-400 rounded-lg hover:bg-indigo-500/30 transition">
+                👁 View Details
+              </button>
+              ${job.report_generated
+                ? `<button onclick="event.stopPropagation(); viewReport('${job._id}')"
+                    class="text-xs px-3 py-1.5 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition">
+                    📊 View Report
+                  </button>
+                  <button onclick="event.stopPropagation(); downloadReport('${job._id}', '${job.title}')"
+                    class="text-xs px-3 py-1.5 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition">
+                    ⬇️ Download PDF
+                  </button>`
+                : `<button onclick="event.stopPropagation(); generateReport('${job._id}')"
+                    class="text-xs px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition">
+                    ⚡ Generate Now
+                  </button>`
+              }
+              <button onclick="event.stopPropagation(); deleteJob('${job._id}')"
+                class="text-xs px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `).join('')
+      } catch(e) { console.error(e) }
+    }
+
+    async function postJob() {
+      const errorEl = document.getElementById('post-error')
+      const loadingEl = document.getElementById('post-loading')
+      errorEl.classList.add('hidden')
+
+      try {
+        let res, data
+
+        if (inputMode === 'text') {
+          const title = document.getElementById('job-title').value
+          const description = document.getElementById('job-description').value
+          if (!title || !description) {
+            errorEl.textContent = 'Please fill title and description'
+            errorEl.classList.remove('hidden')
+            return
+          }
+          loadingEl.classList.remove('hidden')
+          res = await fetch('/api/recruiter/post-job', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ title, description })
+          })
+        } else {
+          const title = document.getElementById('file-title').value
+          const file = document.getElementById('jd-file').files[0]
+          if (!file) {
+            errorEl.textContent = 'Please select a file'
+            errorEl.classList.remove('hidden')
+            return
+          }
+          loadingEl.classList.remove('hidden')
+          const formData = new FormData()
+          formData.append('title', title || 'Uploaded Job')
+          formData.append('file', file)
+          res = await fetch('/api/recruiter/post-job-file', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          })
+        }
+
+        data = await res.json()
+        loadingEl.classList.add('hidden')
+
+        if (!res.ok) {
+          errorEl.textContent = data.detail || 'Failed to post job'
+          errorEl.classList.remove('hidden')
+          return
+        }
+
+        alert(`✅ Job posted! ${data.matched_count} candidates matched.`)
+        loadJobs()
+        loadAnalytics()
+
+      } catch(e) {
+        loadingEl.classList.add('hidden')
+        errorEl.textContent = 'Something went wrong'
+        errorEl.classList.remove('hidden')
+      }
+    }
+
+    async function viewJob(jobId) {
+      const modal = document.getElementById('job-modal')
+      const content = document.getElementById('modal-content')
+      modal.classList.remove('hidden')
+      content.innerHTML = '<div class="text-center py-8 text-white/40">Loading...</div>'
+
+      try {
+        const res = await fetch(`/api/recruiter/jobs/${jobId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const job = await res.json()
+        document.getElementById('modal-title').textContent = job.title
+
+        const statusColors = {
+          'completed': 'bg-green-500/20 text-green-400',
+          'in_progress': 'bg-yellow-500/20 text-yellow-400',
+          'pending': 'bg-gray-500/20 text-gray-400'
+        }
+        const statusLabels = {
+          'completed': '✅ Completed',
+          'in_progress': '⏳ Chatting',
+          'pending': '🔔 Waiting'
+        }
+
+        content.innerHTML = `
+          <!-- Stats Row -->
+          <div class="grid grid-cols-4 gap-3 mb-6">
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-white">${job.matched_count}</div>
+              <div class="text-xs text-white/50 mt-1">Matched</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-green-400">${job.chatted_count}</div>
+              <div class="text-xs text-white/50 mt-1">Chatted</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-yellow-400">${job.in_progress_count}</div>
+              <div class="text-xs text-white/50 mt-1">In Progress</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-gray-400">${job.not_responded_count}</div>
+              <div class="text-xs text-white/50 mt-1">No Response</div>
+            </div>
+          </div>
+
+          <!-- JD Summary -->
+          <div class="bg-white/5 rounded-xl p-4 mb-6">
+            <h3 class="font-semibold mb-2 text-indigo-400">📋 JD Summary</h3>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="text-white/50">Role:</span> <span>${job.parsed_data?.role || '-'}</span></div>
+              <div><span class="text-white/50">Location:</span> <span>${job.parsed_data?.location || '-'}</span></div>
+              <div><span class="text-white/50">Experience:</span> <span>${job.parsed_data?.experience_years || 0}+ years</span></div>
+              <div><span class="text-white/50">Salary:</span> <span>${job.parsed_data?.salary_min || 0}-${job.parsed_data?.salary_max || 0} LPA</span></div>
+            </div>
+            <div class="mt-2">
+              <span class="text-white/50 text-sm">Required Skills: </span>
+              <span class="text-sm">${(job.parsed_data?.required_skills || []).join(', ')}</span>
+            </div>
+          </div>
+
+          <!-- Candidate Status Table -->
+          <h3 class="font-semibold mb-3">👥 Candidate Status</h3>
+          <div class="space-y-2 mb-6">
+            ${(job.candidate_statuses || []).map(c => `
+              <div class="bg-white/5 rounded-xl p-4 flex justify-between items-center">
+                <div>
+                  <div class="font-medium">${c.name}</div>
+                  <div class="text-sm text-white/50">
+                    Match: ${c.match_score}/100
+                    ${c.final_score ? ` • Final: ${c.final_score}/100` : ''}
+                  </div>
+                </div>
+                <span class="status-badge ${statusColors[c.chat_status] || 'bg-gray-500/20 text-gray-400'}">
+                  ${statusLabels[c.chat_status] || c.chat_status}
+                </span>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3 flex-wrap">
+            ${job.report_generated
+              ? `<button onclick="viewReport('${job._id}')"
+                  class="btn-primary flex-1">📊 View Full Report</button>
+                 <button onclick="downloadReport('${job._id}', '${job.title}')"
+                  class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold transition text-sm">
+                  ⬇️ Download PDF
+                 </button>`
+              : `<button onclick="generateReport('${job._id}')"
+                  class="btn-primary flex-1">⚡ Generate Report Now</button>`
+            }
+            <button onclick="closeModal()"
+              class="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-semibold transition text-sm">
+              Close
+            </button>
+          </div>
+        `
+      } catch(e) {
+        content.innerHTML = '<div class="text-red-400 text-center py-8">Failed to load job details</div>'
+      }
+    }
+
+    async function generateReport(jobId) {
+      if (!confirm('Generate report now? This will finalize all scores.')) return
+      try {
+        const res = await fetch(`/api/recruiter/jobs/${jobId}/generate-report`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const data = await res.json()
+        alert('✅ Report generated!')
+        closeModal()
+        loadJobs()
+      } catch(e) {
+        alert('Failed to generate report')
+      }
+    }
+
+    async function deleteJob(jobId) {
+      if (!confirm('⚠️ Delete this job? All matches and conversations will be permanently deleted.')) return
+      try {
+        const res = await fetch(`/api/recruiter/jobs/${jobId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (res.ok) {
+          alert('✅ Job deleted successfully')
+          closeModal()
+          loadJobs()
+          loadAnalytics()
+        } else {
+          const data = await res.json()
+          alert(data.detail || 'Failed to delete job')
+        }
+      } catch(e) {
+        alert('Something went wrong')
+      }
+    }
+
+    function downloadReport(jobId, jobTitle) {
+      fetch(`/api/recruiter/jobs/${jobId}/download-report`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed')
+        return res.blob()
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `report_${jobTitle.replace(/\s+/g, '_')}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      })
+      .catch(() => alert('Failed to download report. Make sure report is generated first.'))
+    }
+
+    async function viewReport(jobId) {
+      const modal = document.getElementById('job-modal')
+      const content = document.getElementById('modal-content')
+      modal.classList.remove('hidden')
+      content.innerHTML = '<div class="text-center py-8 text-white/40">Loading report...</div>'
+
+      try {
+        const res = await fetch(`/api/recruiter/jobs/${jobId}/report`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        const report = await res.json()
+        document.getElementById('modal-title').textContent = `📊 Report: ${report.job_title}`
+
+        const scoreColor = (score) => {
+          if (score >= 80) return 'text-green-400'
+          if (score >= 60) return 'text-yellow-400'
+          return 'text-red-400'
+        }
+
+        content.innerHTML = `
+          <!-- Summary -->
+          <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-white">${report.total_matched}</div>
+              <div class="text-xs text-white/50 mt-1">Total Matched</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-green-400">${report.total_chatted}</div>
+              <div class="text-xs text-white/50 mt-1">Responded</div>
+            </div>
+            <div class="bg-white/5 rounded-xl p-4 text-center">
+              <div class="text-2xl font-bold text-gray-400">${report.total_no_response}</div>
+              <div class="text-xs text-white/50 mt-1">No Response</div>
+            </div>
+          </div>
+
+          <!-- Shortlisted -->
+          <h3 class="font-semibold mb-3 text-green-400">✅ Shortlisted Candidates</h3>
+          <div class="space-y-3 mb-6">
+            ${(report.shortlisted || []).map((c, i) => `
+              <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div class="flex justify-between items-start mb-2">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-indigo-500/30 rounded-full flex items-center justify-center font-bold text-sm">${i + 1}</div>
+                    <div>
+                      <div class="font-semibold">${c.name}</div>
+                      <div class="text-sm text-white/50">${c.location || '-'} • ${c.experience_years} yrs</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-lg font-bold ${scoreColor(c.final_score)}">${c.final_score}</div>
+                    <div class="text-xs text-white/40">Final Score</div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-4 text-sm mb-2">
+                  <span class="text-white/50">Match: <span class="text-indigo-400 font-medium">${c.match_score}/100</span></span>
+                  <span class="text-white/50">Interest: <span class="text-purple-400 font-medium">${c.interest_score}/100</span></span>
+                  <span class="text-white/50">Level:
+                    <span class="${c.interest_level === 'High' ? 'text-green-400' : c.interest_level === 'Medium' ? 'text-yellow-400' : 'text-red-400'} font-medium">
+                      ${c.interest_level}
+                    </span>
+                  </span>
+                </div>
+                ${c.matched_skills?.length ? `
+                  <div class="text-xs text-white/50 mb-1">✅ ${c.matched_skills.join(', ')}</div>` : ''}
+                ${c.missing_skills?.length ? `
+                  <div class="text-xs text-red-400/70 mb-1">❌ Missing: ${c.missing_skills.join(', ')}</div>` : ''}
+                <div class="text-xs text-white/40 mb-2">${c.match_explanation || ''}</div>
+                ${c.key_positives?.length ? `
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    ${c.key_positives.map(p =>
+                      `<span class="text-xs bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full">${p}</span>`
+                    ).join('')}
+                  </div>` : ''}
+                ${c.key_concerns?.length ? `
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    ${c.key_concerns.map(p =>
+                      `<span class="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-0.5 rounded-full">⚠️ ${p}</span>`
+                    ).join('')}
+                  </div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- No Response -->
+          ${report.no_response?.length ? `
+            <h3 class="font-semibold mb-3 text-gray-400">❌ Did Not Respond</h3>
+            <div class="space-y-2 mb-6">
+              ${report.no_response.map(c => `
+                <div class="bg-white/5 rounded-xl p-3 flex justify-between items-center">
+                  <span class="text-white/60">${c.name}</span>
+                  <span class="text-sm text-white/40">Match: ${c.match_score}/100 • Did not respond</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- Actions -->
+          <div class="flex gap-3 mt-4">
+            <button onclick="downloadReport('${jobId}', '${report.job_title}')"
+              class="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl font-semibold text-sm transition">
+              ⬇️ Download PDF Report
+            </button>
+            <button onclick="closeModal()"
+              class="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-semibold text-sm transition">
+              Close
+            </button>
+          </div>
+
+          <div class="text-xs text-white/20 text-center mt-4">
+            Trigger: ${report.trigger?.replace(/_/g, ' ')} •
+            ${new Date(report.generated_at).toLocaleString()}
+          </div>
+        `
+      } catch(e) {
+        content.innerHTML = '<div class="text-red-400 text-center py-8">Failed to load report</div>'
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('job-modal').classList.add('hidden')
+    }
+
+    function logout() {
+      localStorage.clear()
+      window.location.href = '/'
+    }
+
+    // Init
+    loadAnalytics()
+    loadJobs()
+
+    // Auto refresh every 30 seconds
+    setInterval(() => {
+      loadJobs()
+      loadAnalytics()
+    }, 30000)
+  </script>
+</body>
+</html>

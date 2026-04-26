@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langgraph
+langchain
+langchain-groq
+pymongo
+python-dotenv
+pydantic
+groq
+passlib[bcrypt]
+python-jose[cryptography]
+pypdf2
+python-docx
+python-multipart
